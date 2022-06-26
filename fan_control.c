@@ -80,18 +80,19 @@ static void set_fan_percentage(uint8_t percent) {
     snprintf(path, 255, "%s%s", FAN_PWM_PATH, ENABLE);
     int fd = open(path, O_RDWR, 0);
     // set enable/disable
-    if (percent == 0) {
-        write(fd, "0", 2);
-        close(fd);
-    } else {
-        write(fd, "1", 2);
-        memset(path, 0, 255);
-        snprintf(path, 255, "%s%s", FAN_PWM_PATH, DUTY_CYCLE);
-        fd = open(path, O_RDWR, 0);
-        memset(buf, 0, 64);
-        snprintf(buf, 64, "%d", percent);
-        write(fd, buf, strnlen(buf, 64));
-    }
+    write(fd, "0", 2);
+    close(fd);
+    memset(path, 0, 255);
+    snprintf(path, 255, "%s%s", FAN_PWM_PATH, DUTY_CYCLE);
+    fd = open(path, O_RDWR, 0);
+    memset(buf, 0, 64);
+    snprintf(buf, 64, "%d", percent * 10000);
+    write(fd, buf, strnlen(buf, 64));
+    close(fd);
+    memset(path, 0, 255);
+    snprintf(path, 255, "%s%s", FAN_PWM_PATH, ENABLE);
+    fd = open(path, O_RDWR, 0);
+    write(fd, "1", 2);
     close(fd);
 }
 
@@ -107,8 +108,9 @@ int main(void) {
             fan_speed--;
         }
         uint8_t fan_percent = fan_speeds[fan_speed];
-        if(get_fan_percentage() != fan_percent) {
-            printf("fan_control: set speed to %d for temp %d", fan_percent, temp);
+        uint8_t cur_fan_percent = get_fan_percentage();
+        if(cur_fan_percent != fan_percent) {
+            printf("fan_control: set speed %d -> %d for temp %d\n", cur_fan_percent, fan_percent, temp);
             set_fan_percentage(fan_percent);
         }
         usleep(1000000);
