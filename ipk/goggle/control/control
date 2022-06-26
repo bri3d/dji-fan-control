@@ -1,0 +1,6 @@
+Package: fan_control
+Version: 0.1.0
+Maintainer: bri3d
+Description: Service to control fan on goggles even when dji process is not running
+Architecture: pigeon-glasses
+Depends: dinit wtfos-opkg-config
